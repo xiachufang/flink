@@ -127,7 +127,9 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 		report.consistency(consistency);
 		try {
 			for (Map.Entry<Gauge<?>, MeasurementInfo> entry : gauges.entrySet()) {
-				report.point(MetricMapper.map(entry.getValue(), timestamp, entry.getKey()));
+				try {
+					report.point(MetricMapper.map(entry.getValue(), timestamp, entry.getKey()));
+				} catch (RuntimeException ignore) {}
 			}
 
 			for (Map.Entry<Counter, MeasurementInfo> entry : counters.entrySet()) {
