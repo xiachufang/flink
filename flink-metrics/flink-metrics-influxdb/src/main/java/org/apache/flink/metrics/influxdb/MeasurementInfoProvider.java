@@ -24,7 +24,11 @@ import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.runtime.metrics.groups.AbstractMetricGroup;
 import org.apache.flink.runtime.metrics.groups.FrontMetricGroup;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 class MeasurementInfoProvider implements MetricInfoProvider<MeasurementInfo> {
@@ -50,7 +54,7 @@ class MeasurementInfoProvider implements MetricInfoProvider<MeasurementInfo> {
 	private static Map<String, String> getTags(MetricGroup group) {
 		// Keys are surrounded by brackets: remove them, transforming "<name>" to "name".
 		Map<String, String> tags = new HashMap<>();
-		Set<String> allowedTags = new HashSet<>(Arrays.asList("operator_name", "job_name", "host"));
+		Set<String> allowedTags = new HashSet<>(Arrays.asList("<operator_name>", "<job_name>", "<host>"));
 		for (Map.Entry<String, String> variable: group.getAllVariables().entrySet()) {
 			String name = variable.getKey();
 			if (allowedTags.contains(name)) {

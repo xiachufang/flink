@@ -48,6 +48,9 @@ public class MeasurementInfoProviderTest extends TestLogger {
 		variables.put("<A>", "a");
 		variables.put("<B>", "b");
 		variables.put("<C>", "c");
+		variables.put("<operator_name>", "on");
+		variables.put("<job_name>", "jn");
+		variables.put("<host>", "hst");
 		String metricName = "ClassesLoaded";
 		FrontMetricGroup metricGroup = mock(
 			FrontMetricGroup.class,
@@ -62,9 +65,9 @@ public class MeasurementInfoProviderTest extends TestLogger {
 		assertEquals(
 			String.join("" + MeasurementInfoProvider.SCOPE_SEPARATOR, logicalScope, metricName),
 			info.getName());
-		assertThat(info.getTags(), hasEntry("A", "a"));
-		assertThat(info.getTags(), hasEntry("B", "b"));
-		assertThat(info.getTags(), hasEntry("C", "c"));
+		assertThat(info.getTags(), hasEntry("operator_name", "on"));
+		assertThat(info.getTags(), hasEntry("job_name", "jn"));
+		assertThat(info.getTags(), hasEntry("host", "hst"));
 		assertEquals(3, info.getTags().size());
 	}
 }

@@ -91,7 +91,7 @@ public class InfluxdbReporterTest extends TestLogger {
 			assertNotNull("test metric must be registered in the reporter", measurementInfo);
 			assertEquals("taskmanager_" + metricName, measurementInfo.getName());
 			assertThat(measurementInfo.getTags(), hasEntry("host", METRIC_HOSTNAME));
-			assertThat(measurementInfo.getTags(), hasEntry("tm_id", METRIC_TM_ID));
+//			assertThat(measurementInfo.getTags(), hasEntry("tm_id", METRIC_TM_ID));
 		} finally {
 			metricRegistry.shutdown().get();
 		}
@@ -119,7 +119,7 @@ public class InfluxdbReporterTest extends TestLogger {
 				.withQueryParam("rp", equalTo(retentionPolicy))
 				.withQueryParam("consistency", equalTo(consistencyLevel.name().toLowerCase()))
 				.withHeader("Content-Type", containing("text/plain"))
-				.withRequestBody(containing("taskmanager_" + metricName + ",host=" + METRIC_HOSTNAME + ",tm_id=" + METRIC_TM_ID + " count=42i")));
+				.withRequestBody(containing("taskmanager_" + metricName + ",host=" + METRIC_HOSTNAME + " count=42i")));
 		} finally {
 			metricRegistry.shutdown().get();
 		}
