@@ -24,11 +24,8 @@ import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.runtime.metrics.groups.AbstractMetricGroup;
 import org.apache.flink.runtime.metrics.groups.FrontMetricGroup;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 class MeasurementInfoProvider implements MetricInfoProvider<MeasurementInfo> {
@@ -47,18 +44,18 @@ class MeasurementInfoProvider implements MetricInfoProvider<MeasurementInfo> {
 	}
 
 	@Override
-	public MeasurementInfo getMetricInfo(String metricName, MetricGroup group) {
-		return new MeasurementInfo(getScopedName(metricName, group), getTags(group));
+	public MeasurementInfo getMetricInfo(String metricName, MetricGroup group, String allowedTags) {
+		return new MeasurementInfo(getScopedName(metricName, group), getTags(group, allowedTags));
 	}
 
-	private static Map<String, String> getTags(MetricGroup group) {
+	private static Map<String, String> getTags(MetricGroup group, String allowedTags) {
 		// Keys are surrounded by brackets: remove them, transforming "<name>" to "name".
 		Map<String, String> tags = new HashMap<>();
-		Set<String> allowedTags = new HashSet<>(Arrays.asList("<operator_name>", "<job_name>", "<host>"));
 		for (Map.Entry<String, String> variable: group.getAllVariables().entrySet()) {
 			String name = variable.getKey();
-			if (allowedTags.contains(name)) {
-				tags.put(name.substring(1, name.length() - 1), variable.getValue());
+			String realName = name.substring(1, name.length() - 1);
+			if (allowedTags.equals("") || allowedTags.contains(realName)) {
+				tags.put(realName, variable.getValue());
 			}
 		}
 		return tags;

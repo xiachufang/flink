@@ -60,14 +60,17 @@ public class MeasurementInfoProviderTest extends TestLogger {
 		doReturn(variables).when(metricGroup).getAllVariables();
 		doReturn(logicalScope).when(metricGroup).getLogicalScope(any(), anyChar());
 
-		MeasurementInfo info = provider.getMetricInfo(metricName, metricGroup);
+		MeasurementInfo info = provider.getMetricInfo(metricName, metricGroup, "");
 		assertNotNull(info);
 		assertEquals(
 			String.join("" + MeasurementInfoProvider.SCOPE_SEPARATOR, logicalScope, metricName),
 			info.getName());
+		assertThat(info.getTags(), hasEntry("A", "a"));
+		assertThat(info.getTags(), hasEntry("B", "b"));
+		assertThat(info.getTags(), hasEntry("C", "c"));
 		assertThat(info.getTags(), hasEntry("operator_name", "on"));
 		assertThat(info.getTags(), hasEntry("job_name", "jn"));
 		assertThat(info.getTags(), hasEntry("host", "hst"));
-		assertEquals(3, info.getTags().size());
+		assertEquals(6, info.getTags().size());
 	}
 }

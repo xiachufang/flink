@@ -75,6 +75,11 @@ public class InfluxdbReporterOptions {
 		.defaultValue(10000)
 		.withDescription("(optional) the InfluxDB write timeout for metrics");
 
+	public static final ConfigOption<String> ALLOWED_TAGS = ConfigOptions
+		.key("tags")
+		.defaultValue("")
+		.withDescription("(optional) the InfluxDB tags allowed to write");
+
 	static String getString(MetricConfig config, ConfigOption<String> key) {
 		return config.getString(key.key(), key.defaultValue());
 	}

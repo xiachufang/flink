@@ -24,6 +24,7 @@ import org.apache.flink.metrics.Histogram;
 import org.apache.flink.metrics.Meter;
 import org.apache.flink.metrics.Metric;
 import org.apache.flink.metrics.MetricConfig;
+import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.metrics.reporter.MetricReporter;
 import org.apache.flink.metrics.reporter.Scheduled;
 import org.apache.flink.util.NetUtils;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.flink.metrics.influxdb.InfluxdbReporterOptions.ALLOWED_TAGS;
 import static org.apache.flink.metrics.influxdb.InfluxdbReporterOptions.CONNECT_TIMEOUT;
 import static org.apache.flink.metrics.influxdb.InfluxdbReporterOptions.CONSISTENCY;
 import static org.apache.flink.metrics.influxdb.InfluxdbReporterOptions.DB;
@@ -61,6 +63,7 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 
 	private String database;
 	private String retentionPolicy;
+	private String tags;
 	private InfluxDB.ConsistencyLevel consistency;
 	private InfluxDB influxDB;
 
@@ -99,8 +102,9 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 			influxDB = InfluxDBFactory.connect(url, client);
 		}
 
-		log.info("Configured InfluxDBReporter with {host:{}, port:{}, db:{}, retentionPolicy:{} and consistency:{}}",
-			host, port, database, retentionPolicy, consistency.name());
+		this.tags = getString(config, ALLOWED_TAGS);
+		log.info("Configured InfluxDBReporter with {host:{}, port:{}, db:{}, retentionPolicy:{} and consistency:{} and tags:{}}",
+			host, port, database, retentionPolicy, consistency.name(), this.tags);
 	}
 
 	@Override
@@ -109,6 +113,12 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 			influxDB.close();
 			influxDB = null;
 		}
+	}
+
+	@Override
+	public void notifyOfAddedMetric(Metric metric, String metricName, MetricGroup group) {
+		final MeasurementInfo metricInfo = metricInfoProvider.getMetricInfo(metricName, group, this.tags);
+		notify(metric, metricInfo);
 	}
 
 	@Override
@@ -129,7 +139,8 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 			for (Map.Entry<Gauge<?>, MeasurementInfo> entry : gauges.entrySet()) {
 				try {
 					report.point(MetricMapper.map(entry.getValue(), timestamp, entry.getKey()));
-				} catch (RuntimeException ignore) {}
+				} catch (RuntimeException ignore) {
+				}
 			}
 
 			for (Map.Entry<Counter, MeasurementInfo> entry : counters.entrySet()) {
@@ -143,8 +154,7 @@ public class InfluxdbReporter extends AbstractReporter<MeasurementInfo> implemen
 			for (Map.Entry<Meter, MeasurementInfo> entry : meters.entrySet()) {
 				report.point(MetricMapper.map(entry.getValue(), timestamp, entry.getKey()));
 			}
-		}
-		catch (ConcurrentModificationException | NoSuchElementException e) {
+		} catch (ConcurrentModificationException | NoSuchElementException e) {
 			// ignore - may happen when metrics are concurrently added or removed
 			// report next time
 			return null;

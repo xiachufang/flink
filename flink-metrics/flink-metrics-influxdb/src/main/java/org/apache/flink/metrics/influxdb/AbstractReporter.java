@@ -51,9 +51,7 @@ abstract class AbstractReporter<MetricInfo> implements MetricReporter {
 		this.metricInfoProvider = metricInfoProvider;
 	}
 
-	@Override
-	public void notifyOfAddedMetric(Metric metric, String metricName, MetricGroup group) {
-		final MetricInfo metricInfo = metricInfoProvider.getMetricInfo(metricName, group);
+	void notify(Metric metric, MetricInfo metricInfo) {
 		synchronized (this) {
 			if (metric instanceof Counter) {
 				counters.put((Counter) metric, metricInfo);
@@ -68,6 +66,13 @@ abstract class AbstractReporter<MetricInfo> implements MetricReporter {
 					"does not support this metric type.", metric.getClass().getName());
 			}
 		}
+
+	}
+
+	@Override
+	public void notifyOfAddedMetric(Metric metric, String metricName, MetricGroup group) {
+		final MetricInfo metricInfo = metricInfoProvider.getMetricInfo(metricName, group, "");
+		notify(metric, metricInfo);
 	}
 
 	@Override
